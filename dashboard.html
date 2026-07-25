@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KIMI Dashboard — Iframe Charts</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --surface: #12121a;
+    --surface-2: #1a1a25;
+    --border: #2a2a3a;
+    --text: #e2e2e8;
+    --text-dim: #8888a0;
+    --accent: #3b82f6;
+    --accent-glow: rgba(59,130,246,0.15);
+  }
+  .light {
+    --bg: #f5f5f7;
+    --surface: #ffffff;
+    --surface-2: #f0f0f5;
+    --border: #d1d1db;
+    --text: #1a1a2e;
+    --text-dim: #666680;
+    --accent: #2563eb;
+    --accent-glow: rgba(37,99,235,0.1);
+  }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    transition: background 0.3s, color 0.3s;
+  }
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+  .card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 32px var(--accent-glow);
+  }
+  .card-header {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface-2);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .card-title {
+    font-size: 0.85rem;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+  }
+  iframe {
+    width: 100%;
+    height: 280px;
+    border: none;
+    display: block;
+    background: var(--surface);
+  }
+  .sidebar {
+    width: 220px;
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    min-height: 100vh;
+    position: fixed;
+    left: 0;
+    top: 0;
+    padding: 24px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .nav-item {
+    padding: 10px 14px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: var(--text-dim);
+    transition: all 0.15s;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .nav-item:hover, .nav-item.active {
+    background: var(--accent-glow);
+    color: var(--accent);
+  }
+  .main {
+    margin-left: 220px;
+    padding: 32px;
+    min-height: 100vh;
+  }
+  .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 28px;
+  }
+  .header h1 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+  }
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(420px, 1fr));
+    gap: 20px;
+  }
+  .toggle-btn {
+    padding: 8px 16px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--surface-2);
+    color: var(--text);
+    cursor: pointer;
+    font-size: 0.85rem;
+    font-weight: 500;
+    transition: all 0.2s;
+  }
+  .toggle-btn:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+  .badge {
+    font-size: 0.7rem;
+    padding: 2px 8px;
+    border-radius: 999px;
+    background: var(--accent-glow);
+    color: var(--accent);
+    font-weight: 600;
+  }
+  @media (max-width: 768px) {
+    .sidebar { display: none; }
+    .main { margin-left: 0; padding: 16px; }
+    .grid { grid-template-columns: 1fr; }
+  }
+</style>
+<base target="_blank">
+</head>
+<body>
+
+<aside class="sidebar">
+  <div style="font-size:1.1rem;font-weight:800;margin-bottom:24px;letter-spacing:0.05em;color:var(--accent)">KIMI DASH</div>
+  <div class="nav-item active"><span>◈</span> Overview</div>
+  <div class="nav-item"><span>◇</span> Analytics</div>
+  <div class="nav-item"><span>◇</span> Finance</div>
+  <div class="nav-item"><span>◇</span> Systems</div>
+  <div class="nav-item"><span>◇</span> Logs</div>
+  <div style="margin-top:auto;font-size:0.75rem;color:var(--text-dim);opacity:0.6">RH-4010 // v1.0</div>
+</aside>
+
+<main class="main">
+  <div class="header">
+    <div>
+      <h1>Dashboard</h1>
+      <div style="font-size:0.85rem;color:var(--text-dim);margin-top:4px">Real-time iframe chart grid</div>
+    </div>
+    <button class="toggle-btn" onclick="document.body.classList.toggle('light')">◐ Toggle</button>
+  </div>
+
+  <div class="grid">
+
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">Revenue Stream</span>
+        <span class="badge">Live</span>
+      </div>
+      <iframe srcdoc="
+        <!DOCTYPE html>
+        <html><head><script src='https://cdn.plot.ly/plotly-2.27.0.min.js'></script><style>body{margin:0;background:transparent;}</style></head>
+        <body><div id='c'></div><script>
+          Plotly.newPlot('c', [{
+            x: ['Jan','Feb','Mar','Apr','May','Jun'],
+            y: [42,55,48,72,68,85],
+            type: 'scatter',
+            mode: 'lines+markers',
+            fill: 'tozeroy',
+            line: {color: '#3b82f6', width: 2},
+            marker: {size: 6, color: '#3b82f6'},
+            fillcolor: 'rgba(59,130,246,0.1)'
+          }], {
+            paper_bgcolor: 'transparent',
+            plot_bgcolor: 'transparent',
+            margin: {t:20,r:20,b:40,l:40},
+            xaxis: {gridcolor: 'rgba(128,128,160,0.1)', tickfont: {size:11, color:'#8888a0'}},
+            yaxis: {gridcolor: 'rgba(128,128,160,0.1)', tickfont: {size:11, color:'#8888a0'}},
+            font: {family: 'Segoe UI, sans-serif'}
+          }, {responsive: true, displayModeBar: false});
+        </script></body></html>
+      "></iframe>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">User Distribution</span>
+        <span class="badge">Live</span>
+      </div>
+      <iframe srcdoc="
+        <!DOCTYPE html>
+        <html><head><script src='https://cdn.plot.ly/plotly-2.27.0.min.js'></script><style>body{margin:0;background:transparent;}</style></head>
+        <body><div id='c'></div><script>
+          Plotly.newPlot('c', [{
+            values: [35,25,20,15,5],
+            labels: ['Mobile','Desktop','Tablet','TV','Other'],
+            type: 'pie',
+            hole: 0.55,
+            marker: {colors: ['#3b82f6','#6366f1','#8b5cf6','#ec4899','#f59e0b']},
+            textinfo: 'none'
+          }], {
+            paper_bgcolor: 'transparent',
+            plot_bgcolor: 'transparent',
+            margin: {t:20,r:20,b:20,l:20},
+            showlegend: true,
+            legend: {orientation:'h', y:-0.05, font:{size:10, color:'#8888a0'}},
+            font: {family: 'Segoe UI, sans-serif'}
+          }, {responsive: true, displayModeBar: false});
+        </script></body></html>
+      "></iframe>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">Server Load</span>
+        <span class="badge">Live</span>
+      </div>
+      <iframe srcdoc="
+        <!DOCTYPE html>
+        <html><head><script src='https://cdn.plot.ly/plotly-2.27.0.min.js'></script><style>body{margin:0;background:transparent;}</style></head>
+        <body><div id='c'></div><script>
+          Plotly.newPlot('c', [{
+            x: ['00:00','04:00','08:00','12:00','16:00','20:00'],
+            y: [12,8,45,78,65,35],
+            type: 'bar',
+            marker: {color: ['#3b82f6','#3b82f6','#f59e0b','#ef4444','#f59e0b','#3b82f6']},
+            cornerRadius: 4
+          }], {
+            paper_bgcolor: 'transparent',
+            plot_bgcolor: 'transparent',
+            margin: {t:20,r:20,b:40,l:40},
+            xaxis: {gridcolor: 'rgba(128,128,160,0.1)', tickfont: {size:11, color:'#8888a0'}},
+            yaxis: {gridcolor: 'rgba(128,128,160,0.1)', tickfont: {size:11, color:'#8888a0'}},
+            font: {family: 'Segoe UI, sans-serif'}
+          }, {responsive: true, displayModeBar: false});
+        </script></body></html>
+      "></iframe>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">P-Cell Density</span>
+        <span class="badge">Live</span>
+      </div>
+      <iframe srcdoc="
+        <!DOCTYPE html>
+        <html><head><script src='https://cdn.plot.ly/plotly-2.27.0.min.js'></script><style>body{margin:0;background:transparent;}</style></head>
+        <body><div id='c'></div><script>
+          var x=[], y=[], z=[], colors=[];
+          for(var i=0;i<50;i++){
+            x.push(Math.random()*10);
+            y.push(Math.random()*10);
+            z.push(Math.random()*10);
+            colors.push(Math.random());
+          }
+          Plotly.newPlot('c', [{
+            x: x, y: y, z: z,
+            mode: 'markers',
+            type: 'scatter3d',
+            marker: {size: 4, color: colors, colorscale: 'Blues', opacity: 0.8}
+          }], {
+            paper_bgcolor: 'transparent',
+            plot_bgcolor: 'transparent',
+            margin: {t:10,r:10,b:10,l:10},
+            scene: {
+              xaxis: {backgroundcolor:'transparent', gridcolor:'rgba(128,128,160,0.1)', tickfont:{size:9,color:'#8888a0'}},
+              yaxis: {backgroundcolor:'transparent', gridcolor:'rgba(128,128,160,0.1)', tickfont:{size:9,color:'#8888a0'}},
+              zaxis: {backgroundcolor:'transparent', gridcolor:'rgba(128,128,160,0.1)', tickfont:{size:9,color:'#8888a0'}},
+              camera: {eye: {x:1.5,y:1.5,z:1.2}}
+            },
+            font: {family: 'Segoe UI, sans-serif'}
+          }, {responsive: true, displayModeBar: false});
+        </script></body></html>
+      "></iframe>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">Error Rate Trend</span>
+        <span class="badge">Live</span>
+      </div>
+      <iframe srcdoc="
+        <!DOCTYPE html>
+        <html><head><script src='https://cdn.plot.ly/plotly-2.27.0.min.js'></script><style>body{margin:0;background:transparent;}</style></head>
+        <body><div id='c'></div><script>
+          Plotly.newPlot('c', [{
+            x: ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'],
+            y: [2.1,1.8,3.2,1.5,1.2,0.8,0.5],
+            type: 'scatter',
+            mode: 'lines+markers',
+            line: {color: '#10b981', width: 3, shape: 'spline'},
+            marker: {size: 7, color: '#10b981'}
+          }], {
+            paper_bgcolor: 'transparent',
+            plot_bgcolor: 'transparent',
+            margin: {t:20,r:20,b:40,l:40},
+            xaxis: {gridcolor: 'rgba(128,128,160,0.1)', tickfont: {size:11, color:'#8888a0'}},
+            yaxis: {gridcolor: 'rgba(128,128,160,0.1)', tickfont: {size:11, color:'#8888a0'}, ticksuffix: '%'},
+            font: {family: 'Segoe UI, sans-serif'}
+          }, {responsive: true, displayModeBar: false});
+        </script></body></html>
+      "></iframe>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">Network Latency</span>
+        <span class="badge">Live</span>
+      </div>
+      <iframe srcdoc="
+        <!DOCTYPE html>
+        <html><head><script src='https://cdn.plot.ly/plotly-2.27.0.min.js'></script><style>body{margin:0;background:transparent;}</style></head>
+        <body><div id='c'></div><script>
+          var t=[];
+          for(var i=0;i<60;i++) t.push(i);
+          Plotly.newPlot('c', [{
+            x: t,
+            y: t.map(()=>20+Math.random()*40+Math.sin(Date.now()/10000)*10),
+            type: 'scatter',
+            mode: 'lines',
+            line: {color: '#8b5cf6', width: 1.5},
+            fill: 'tozeroy',
+            fillcolor: 'rgba(139,92,246,0.08)'
+          }], {
+            paper_bgcolor: 'transparent',
+            plot_bgcolor: 'transparent',
+            margin: {t:20,r:20,b:40,l:40},
+            xaxis: {gridcolor: 'rgba(128,128,160,0.1)', tickfont: {size:11, color:'#8888a0'}, title: {text:'Seconds', font:{size:10,color:'#8888a0'}}},
+            yaxis: {gridcolor: 'rgba(128,128,160,0.1)', tickfont: {size:11, color:'#8888a0'}, title: {text:'ms', font:{size:10,color:'#8888a0'}}},
+            font: {family: 'Segoe UI, sans-serif'}
+          }, {responsive: true, displayModeBar: false});
+        </script></body></html>
+      "></iframe>
+    </div>
+
+  </div>
+</main>
+
+</body>
+</html>
