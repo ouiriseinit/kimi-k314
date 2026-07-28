@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RH-4010 | Cybersecurity Study Tracker</title>
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --surface: #12121a;
+    --border: #1e1e2e;
+    --text: #e2e2e8;
+    --muted: #7a7a8a;
+    --accent: #3b82f6;
+    --accent2: #06b6d4;
+    --success: #22c55e;
+    --warn: #f59e0b;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    line-height: 1.6;
+    padding: 2rem 1rem;
+    max-width: 900px;
+    margin: 0 auto;
+  }
+  h1 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-bottom: 0.25rem;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .subtitle {
+    color: var(--muted);
+    font-size: 0.9rem;
+    margin-bottom: 1.5rem;
+  }
+  .progress-bar {
+    width: 100%;
+    height: 6px;
+    background: var(--border);
+    border-radius: 3px;
+    margin-bottom: 2rem;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    width: 0%;
+    transition: width 0.4s ease;
+  }
+  .phase {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.25rem;
+    margin-bottom: 1rem;
+  }
+  .phase-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.75rem;
+    cursor: pointer;
+  }
+  .phase-title {
+    font-size: 1.05rem;
+    font-weight: 600;
+  }
+  .phase-meta {
+    font-size: 0.8rem;
+    color: var(--muted);
+  }
+  .week {
+    border-left: 3px solid var(--border);
+    padding-left: 1rem;
+    margin-bottom: 1rem;
+    transition: border-color 0.2s;
+  }
+  .week:hover { border-left-color: var(--accent); }
+  .week-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 0.5rem;
+  }
+  .week-toggle {
+    width: 20px;
+    height: 20px;
+    border: 2px solid var(--muted);
+    border-radius: 4px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.75rem;
+    color: transparent;
+    transition: all 0.2s;
+    flex-shrink: 0;
+  }
+  .week-toggle.done {
+    background: var(--success);
+    border-color: var(--success);
+    color: var(--bg);
+  }
+  .week-label {
+    font-weight: 600;
+    font-size: 0.95rem;
+  }
+  .tier {
+    font-size: 0.7rem;
+    padding: 0.15rem 0.5rem;
+    border-radius: 4px;
+    background: var(--border);
+    color: var(--muted);
+    margin-left: auto;
+  }
+  .tier.test { color: var(--accent2); }
+  .tier.util { color: var(--warn); }
+  .tier.comp { color: var(--accent); }
+  .week-content {
+    color: var(--muted);
+    font-size: 0.9rem;
+    padding-left: 2rem;
+  }
+  .week-content ul {
+    list-style: none;
+    padding: 0;
+  }
+  .week-content li {
+    padding: 0.2rem 0;
+    position: relative;
+    padding-left: 1rem;
+  }
+  .week-content li::before {
+    content: "›";
+    position: absolute;
+    left: 0;
+    color: var(--accent);
+  }
+  .note {
+    background: rgba(59, 130, 246, 0.08);
+    border-left: 3px solid var(--accent);
+    padding: 0.75rem 1rem;
+    border-radius: 0 8px 8px 0;
+    font-size: 0.85rem;
+    color: var(--muted);
+    margin-top: 1.5rem;
+  }
+  .note strong { color: var(--text); }
+  .stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+  }
+  .stat {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1rem;
+    text-align: center;
+  }
+  .stat-value {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--accent);
+  }
+  .stat-label {
+    font-size: 0.75rem;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  @media (max-width: 600px) {
+    .stats { grid-template-columns: 1fr; }
+    body { padding: 1rem; }
+  }
+</style>
+<base target="_blank">
+</head>
+<body>
+
+<h1>RH-4010 Cybersecurity Track</h1>
+<div class="subtitle">12-week study plan · adapted for browser-first stack · no Python required</div>
+
+<div class="stats">
+  <div class="stat">
+    <div class="stat-value" id="stat-weeks">0/12</div>
+    <div class="stat-label">Weeks Done</div>
+  </div>
+  <div class="stat">
+    <div class="stat-value" id="stat-phases">0/3</div>
+    <div class="stat-label">Phases Complete</div>
+  </div>
+  <div class="stat">
+    <div class="stat-value" id="stat-pct">0%</div>
+    <div class="stat-label">Progress</div>
+  </div>
+</div>
+
+<div class="progress-bar">
+  <div class="progress-fill" id="progress-fill"></div>
+</div>
+
+<div class="phase" data-phase="1">
+  <div class="phase-header" onclick="togglePhase(this)">
+    <div>
+      <div class="phase-title">Phase 1: Foundations</div>
+      <div class="phase-meta">Weeks 1–4 · The hollow before the spear</div>
+    </div>
+    <span class="phase-toggle">▼</span>
+  </div>
+  <div class="phase-body">
+    <div class="week" data-week="1">
+      <div class="week-header">
+        <div class="week-toggle" onclick="toggleWeek(this, event)"></div>
+        <span class="week-label">Week 1–2: CS50x Weeks 0–4</span>
+        <span class="tier test">Test Drive</span>
+      </div>
+      <div class="week-content">
+        <ul>
+          <li>Watch CS50x Weeks 0–4 (C, memory, algorithms)</li>
+          <li>Goal: understand pointers, memory layout, computational thinking</li>
+          <li>Skip Python weeks for now — we run JS/Node</li>
+          <li>~2–3 hrs/day</li>
+        </ul>
+      </div>
+    </div>
+    <div class="week" data-week="2">
+      <div class="week-header">
+        <div class="week-toggle" onclick="toggleWeek(this, event)"></div>
+        <span class="week-label">Week 3: Networking Fundamentals</span>
+        <span class="tier util">Utility Layer</span>
+      </div>
+      <div class="week-content">
+        <ul>
+          <li>Professor Messer Network+ series (YouTube)</li>
+          <li>IP addressing, DNS, TCP/UDP, subnetting, OSI model</li>
+          <li>NetworkChuck playlist for friendlier intro</li>
+          <li>Lab: trace route, ping, netstat, nslookup from WSL/Kali</li>
+        </ul>
+      </div>
+    </div>
+    <div class="week" data-week="3">
+      <div class="week-header">
+        <div class="week-toggle" onclick="toggleWeek(this, event)"></div>
+        <span class="week-label">Week 4: Linux & Command Line</span>
+        <span class="tier util">Utility Layer</span>
+      </div>
+      <div class="week-content">
+        <ul>
+          <li>freeCodeCamp Linux tutorials (YouTube)</li>
+          <li>Navigate filesystem, permissions, bash scripting</li>
+          <li>Use existing WSL/Kali setup — no new VM needed</li>
+          <li>Docker basics: <code>docker run</code>, volumes, networking</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="phase" data-phase="2">
+  <div class="phase-header" onclick="togglePhase(this)">
+    <div>
+      <div class="phase-title">Phase 2: Security Fundamentals</div>
+      <div class="phase-meta">Weeks 5–8 · Sharpening the edge</div>
+    </div>
+    <span class="phase-toggle">▼</span>
+  </div>
+  <div class="phase-body">
+    <div class="week" data-week="4">
+      <div class="week-header">
+        <div class="week-toggle" onclick="toggleWeek(this, event)"></div>
+        <span class="week-label">Week 5–6: CS50 Cybersecurity</span>
+        <span class="tier util">Utility Layer</span>
+      </div>
+      <div class="week-content">
+        <ul>
+          <li>Harvard CS50 Cybersecurity (free)</li>
+          <li>Authentication, encryption, malware, web security, privacy</li>
+          <li>Focus on web security modules — maps to your stack</li>
+        </ul>
+      </div>
+    </div>
+    <div class="week" data-week="5">
+      <div class="week-header">
+        <div class="week-toggle" onclick="toggleWeek(this, event)"></div>
+        <span class="week-label">Week 7: Web Fundamentals</span>
+        <span class="tier comp">Component Layer</span>
+      </div>
+      <div class="week-content">
+        <ul>
+          <li>HTML, CSS, JavaScript deep dive</li>
+          <li>DOM manipulation, fetch/HTTP, browser dev tools</li>
+          <li>Express.js basics: routes, middleware, static files</li>
+          <li>Not full-stack mastery — just enough to break and rebuild</li>
+        </ul>
+      </div>
+    </div>
+    <div class="week" data-week="6">
+      <div class="week-header">
+        <div class="week-toggle" onclick="toggleWeek(this, event)"></div>
+        <span class="week-label">Week 8: IoT & Embedded</span>
+        <span class="tier util">Utility Layer</span>
+      </div>
+      <div class="week-content">
+        <ul>
+          <li>Research MQTT, Zigbee, common IoT protocols</li>
+          <li>Case study: Mirai botnet</li>
+          <li>Optional: Raspberry Pi + Node.js sensor project</li>
+          <li>Read CVEs for IoT devices — understand attack surface</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="phase" data-phase="3">
+  <div class="phase-header" onclick="togglePhase(this)">
+    <div>
+      <div class="phase-title">Phase 3: Hands-On Practice</div>
+      <div class="phase-meta">Weeks 9–12 · The ref enters the field</div>
+    </div>
+    <span class="phase-toggle">▼</span>
+  </div>
+  <div class="phase-body">
+    <div class="week" data-week="7">
+      <div class="week-header">
+        <div class="week-toggle" onclick="toggleWeek(this, event)"></div>
+        <span class="week-label">Week 9–10: TryHackMe</span>
+        <span class="tier util">Utility Layer</span>
+      </div>
+      <div class="week-content">
+        <ul>
+          <li>Pre Security path (free)</li>
+          <li>Intro to Cyber Security path</li>
+          <li>Legal sandbox — practice what you learned</li>
+          <li>Document everything in markdown notes</li>
+        </ul>
+      </div>
+    </div>
+    <div class="week" data-week="8">
+      <div class="week-header">
+        <div class="week-toggle" onclick="toggleWeek(this, event)"></div>
+        <span class="week-label">Week 11: Pick Your Track</span>
+        <span class="tier comp">Component Layer</span>
+      </div>
+      <div class="week-content">
+        <ul>
+          <li><strong>Blue team:</strong> SOC analyst path, log analysis, detection rules</li>
+          <li><strong>Red team:</strong> Junior Penetration Tester path, web app testing</li>
+          <li><strong>IoT:</strong> Hardware hacking, firmware extraction, UART/JTAG</li>
+          <li>Choose based on what felt alive during practice</li>
+        </ul>
+      </div>
+    </div>
+    <div class="week" data-week="9">
+      <div class="week-header">
+        <div class="week-toggle" onclick="toggleWeek(this, event)"></div>
+        <span class="week-label">Week 12: Portfolio Project</span>
+        <span class="tier comp">Component Layer</span>
+      </div>
+      <div class="week-content">
+        <ul>
+          <li>Build a security dashboard in HTML/CSS/JS</li>
+          <li>Or: Express.js API that simulates log analysis / threat scoring</li>
+          <li>Or: Document a home lab (WSL + Docker + Kali + target VMs)</li>
+          <li>Post on GitHub — code speaks louder than certs</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="note">
+  <strong>Adaptations made:</strong> Python/C minimized — CS50 gives you the conceptual foundation in C, then we pivot to JS/Node for all tooling. Your existing WSL/Kali/Docker knowledge accelerates Weeks 3–4. Web security is emphasized because your stack (HTML, CSS, JS, Express) is the battlefield. Complexity Scale mapped: Test Drive = conceptual exposure, Utility = CLI/networking, Component = builds and projects.
+</div>
+
+<script>
+  const storageKey = 'rh4010-cyber-progress';
+  let progress = JSON.parse(localStorage.getItem(storageKey)) || {};
+
+  function save() {
+    localStorage.setItem(storageKey, JSON.stringify(progress));
+    updateStats();
+  }
+
+  function toggleWeek(el, e) {
+    e.stopPropagation();
+    const week = el.closest('.week').dataset.week;
+    progress[week] = !progress[week];
+    el.classList.toggle('done', progress[week]);
+    save();
+  }
+
+  function togglePhase(header) {
+    const body = header.nextElementSibling;
+    body.style.display = body.style.display === 'none' ? 'block' : 'none';
+  }
+
+  function updateStats() {
+    const weeks = document.querySelectorAll('.week');
+    let done = 0;
+    weeks.forEach(w => {
+      const id = w.dataset.week;
+      const toggle = w.querySelector('.week-toggle');
+      if (progress[id]) {
+        done++;
+        toggle.classList.add('done');
+      } else {
+        toggle.classList.remove('done');
+      }
+    });
+
+    const pct = Math.round((done / 12) * 100);
+    document.getElementById('stat-weeks').textContent = done + '/12';
+    document.getElementById('stat-pct').textContent = pct + '%';
+    document.getElementById('progress-fill').style.width = pct + '%';
+
+    let phasesDone = 0;
+    document.querySelectorAll('.phase').forEach(phase => {
+      const phaseWeeks = phase.querySelectorAll('.week');
+      const phaseDone = Array.from(phaseWeeks).filter(w => progress[w.dataset.week]).length;
+      if (phaseDone === phaseWeeks.length) phasesDone++;
+    });
+    document.getElementById('stat-phases').textContent = phasesDone + '/3';
+  }
+
+  updateStats();
+</script>
+
+</body>
+</html>
