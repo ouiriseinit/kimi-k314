@@ -1,0 +1,22 @@
+{
+  "name": "kimin8n-mcp-server",
+  "version": "1.1.0",
+  "description": "Kimi capabilities exposed as MCP tools for n8n, Continue.dev, Claude Desktop, and Cursor",
+  "main": "server.js",
+  "type": "module",
+  "scripts": {
+    "start": "node server.js",
+    "stdio": "node server.js --stdio",
+    "dev": "node --watch server.js"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.0.0",
+    "express": "^4.21.0",
+    "cors": "^2.8.5"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "keywords": ["mcp", "n8n", "continue.dev", "claude", "cursor", "kimi", "ai-agent"],
+  "license": "MIT"
+}
