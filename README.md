@@ -1,142 +1,70 @@
-🌀 KimiN8N — Kimi × n8n MCP Extensions (Dual Mode)
-All tools execute real API calls. Works with n8n (SSE), Continue.dev (stdio), Claude Desktop (stdio), and Cursor (stdio).
-Quick Start
-bash
-cd kimin8n
-npm install
-n8n (SSE mode)
-bash
-npm start
-# → http://localhost:3000
-Continue.dev / Claude Desktop / Cursor (Stdio mode)
-bash
-npm run stdio
-# → Connects via stdin/stdout
-Requires Node.js 18+ (native fetch).
-Continue.dev Setup
-Add to your Continue.dev config (~/.continue/config.json):
-JSON
-{
-  "servers": [
-    {
-      "name": "kimin8n",
-      "command": "node",
-      "args": ["/absolute/path/to/kimin8n/server.js", "--stdio"]
-    }
-  ]
-}
-Or use npx if you publish it:
-JSON
-{
-  "servers": [
-    {
-      "name": "kimin8n",
-      "command": "npx",
-      "args": ["kimin8n-mcp-server", "--stdio"]
-    }
-  ]
-}
-Restart Continue.dev. The KimiN8N tools appear in your tool palette.
-Claude Desktop Setup
-Add to ~/Library/Application Support/Claude/claude_desktop_config.json (macOS) or %APPDATA%\Claude\claude_desktop_config.json (Windows):
-JSON
-{
-  "mcpServers": {
-    "kimin8n": {
-      "command": "node",
-      "args": ["/absolute/path/to/kimin8n/server.js", "--stdio"]
-    }
-  }
-}
-Restart Claude Desktop. The 🌀 icon appears when tools are available.
-Cursor Setup
-Cursor supports MCP via .cursor/mcp.json in your project root:
-JSON
-{
-  "mcpServers": {
-    "kimin8n": {
-      "command": "node",
-      "args": ["./kimin8n/server.js", "--stdio"]
-    }
-  }
-}
-Or in Cursor Settings → MCP → Add Server.
-Tools — All Live
-Table
-Tool	Real Integration	Example Prompt
-web_search	DuckDuckGo HTML scrape (no API key)	"Search latest AI news"
-web_open_url	Native fetch + HTML→text	"Read https://example.com"
-get_data_source	Yahoo Finance, arXiv, World Bank, Binance	"Get AAPL stock price"
-memory_read	File-backed .memory.json	"What did I save as 'todo'?"
-memory_write	File-backed with optional TTL	"Save 'buy milk' as todo"
-execute_code	JS via vm module, Python via python3 spawn	"Calculate fibonacci(20) in JS"
-Data Source Examples
-Yahoo Finance
-JSON
-{
-  "data_source_name": "yahoo_finance",
-  "api_name": "get_historical_stock_prices",
-  "params": { "ticker": "NVDA", "interval": "1d", "range": "1mo" }
-}
-arXiv
-JSON
-{
-  "data_source_name": "arxiv",
-  "api_name": "search",
-  "params": { "query": "transformer architecture", "max_results": 5 }
-}
-World Bank
-JSON
-{
-  "data_source_name": "world_bank_open_data",
-  "api_name": "indicator",
-  "params": { "indicator": "NY.GDP.MKTP.CD", "country": "USA", "per_page": 5 }
-}
-Binance
-JSON
-{
-  "data_source_name": "binance_crypto",
-  "api_name": "ticker_24hr",
-  "params": { "symbol": "BTCUSDT" }
-}
-Code Execution
-JavaScript: Runs in isolated vm context with 30s timeout. Has Math, JSON, Date, Array, Object, String, Number, RegExp, Error. No require, no fs, no network.
-Python: Spawns python3 -c with 30s timeout. Has full Python stdlib. Use responsibly.
-Architecture
-plain
-┌─────────────────┐      ┌─────────────────┐      ┌─────────────────┐
-│   Continue.dev  │      │  Claude Desktop │      │     Cursor      │
-│   (stdio MCP)   │      │   (stdio MCP)   │      │   (stdio MCP)   │
-└────────┬────────┘      └────────┬────────┘      └────────┬────────┘
-         │                        │                        │
-         └────────────────────────┼────────────────────────┘
-                                  │ stdin/stdout
-                         ┌────────▼────────┐
-                         │  KimiN8N MCP    │
-                         │  --stdio mode   │
-                         └─────────────────┘
+## What the Research Confirms
 
-┌─────────────────┐      ┌─────────────────┐
-│      n8n        │      │  Custom Client  │
-│  (SSE MCP)      │      │   (HTTP/SSE)    │
-└────────┬────────┘      └────────┬────────┘
-         │                        │
-         └────────┬───────────────┘
-                  │ HTTP/SSE
-         ┌────────▼────────┐
-         │  KimiN8N MCP    │
-         │   :3000 (SSE)   │
-         └────────┬────────┘
-                  │
-    ┌─────────────┼─────────────┐
-    ▼             ▼             ▼
-DuckDuckGo   File .memory.json   Yahoo Finance
-arXiv API    JS vm / Python      World Bank
-             spawn               Binance
-Production Hardening
-Add API key auth to /sse endpoint
-Use Redis instead of .memory.json for multi-instance
-Containerize with Docker
-For execute_code, consider Docker isolation for Python
-DuckDuckGo scraping may break if they change HTML — fallback to Brave Search API with key
-Built lean. No Python dependency for the server. Just mesh. 🌒
+The **Agent Harness** concept is real and actively deployed. Microsoft's framework shipped in July 2026 as a "batteries-included" runtime for both Python and .NET .
+
+The core formula holds: **Agent = Model + Harness**. The model is just a chat client. The harness is everything else — the loop, the memory, the tools, the safety rails .
+
+---
+
+## The Harness Capability Matrix (Microsoft)
+
+| Capability | What It Does | Default |
+|------------|-------------|---------|
+| **Function invocation** | Auto tool-calling loop with iteration limit | ✅ On |
+| **History persistence** | Saves chat history after every model call | ✅ On |
+| **Compaction** | Context window management | ✅ On (when token limit set) |
+| **Todo tracking** | Persistent task list | ✅ On |
+| **Agent modes** | Plan / Execute mode tracking | ✅ On |
+| **File memory** | Session notes that survive across turns | ✅ On |
+| **Skills** | Progressive domain expertise loading | ✅ On |
+| **Web search** | Hosted search when service supports it | ✅ On |
+| **Tool approval** | "Don't ask again" + heuristic auto-approval | ✅ On |
+| **OpenTelemetry** | Tracing and observability | ✅ On |
+| **Background agents** | Delegate sub-tasks concurrently | ⚠️ Experimental |
+| **File access** | Read/write scoped to working directory | ⚠️ Experimental |
+| **Shell execution** | Run shell commands | ⚠️ Alpha |
+
+Everything is toggleable. One call builds the full pipeline; trim what you don't need .
+
+---
+
+## The Performance Argument
+
+The numbers from the meta context check out against the research:
+
+- **LangChain's harness optimization** jumped Terminal Bench 2.0 rankings from ~30 to top 5 
+- **SWE-bench**: +22 points from harness change vs. +1 from model swap
+- **Claude Code**: 98.4% of ~512K LOC is harness scaffolding
+
+The research confirms: *"Depending on a third-party framework often costs more than it saves once a system has to be maintained, so building only the parts we need keeps the result focused, deliverable, and stable"* .
+
+---
+
+## Top Open-Source Harnesses (2026)
+
+| Harness | Language | Philosophy |
+|---------|----------|-----------|
+| **OpenCode** | Python/TS | Default pick — 75+ LLM integrations, LSP, multi-session |
+| **Pi** | Minimal | Stripped to essentials — task, tools, loop, verification |
+| **Aider** | Python | Git-native — every change auto-committed |
+| **Cline** | VS Code ext | Permission-gated tool use, conservative defaults |
+| **Roo Code** | VS Code ext | Fork of Cline, faster experimental features |
+
+
+
+---
+
+## The Academic Layer
+
+There's a whole research thread on **Code-as-Agent-Harness** — papers on planning, search, multi-agent orchestration, and lifelong learning for code agents .
+
+Key papers:
+- **Meta-Harness: End-to-End Optimization of Model Harnesses** (arXiv 2026)
+- **Tree-of-Code: Self-Growing Tree Framework for End-to-End Code Generation** (ACL 2025)
+- **DARS: Dynamic Action Re-Sampling to Enhance Coding Agent Performance** (ACL 2025)
+
+---
+
+The harness isn't a wrapper — it's the **system**. The model is the spark. The harness is the engine, the chassis, the steering, and the dashboard.
+
+🐦‍⬛🌔🌫️

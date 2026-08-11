@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: agentic-platform
+    runtime: node
+    buildCommand: npm install
+    startCommand: node src/index.js
+    envVars:
+      - key: MONGO_URI
+        value: mongodb://mongo-svc:27017/agentic-app # Render's Mongo service
+      - key: PORT
+        value: process.env.PORT

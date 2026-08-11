@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Multi-Agent Harness & JARVIS Dashboard</title>
+<style>
+/* ═══════════════════════════════════════════════════════════════
+   MULTI-AGENT HARNESS & JARVIS DASHBOARD
+   3D Glass Morphism — Agent Harness Architecture
+   ═══════════════════════════════════════════════════════════════ */
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --z-bg: -100; --z-base: 0; --z-content: 10; --z-card: 20;
+  --z-float: 30; --z-overlay: 40; --z-tooltip: 50; --z-nav: 60; --z-top: 100;
+  --void: #0a0a0a; --metal: #e8e8e8; --earth: #c9a96e; --water: #4a90a4;
+  --fire: #c75b39; --wood: #6b9e75; --purple: #8B5CF6;
+  --glass-bg: rgba(255,255,255,0.03); --glass-bg-hover: rgba(255,255,255,0.06);
+  --glass-border: rgba(255,255,255,0.08); --glass-border-hover: rgba(255,255,255,0.15);
+  --glass-blur: 24px; --glass-blur-lg: 40px;
+  --glass-shadow: 0 8px 32px rgba(0,0,0,0.4); --glass-shadow-lg: 0 16px 64px rgba(0,0,0,0.5);
+  --perspective: 1200px;
+  --ease-smooth: cubic-bezier(0.25,0.46,0.45,0.94);
+  --ease-spring: cubic-bezier(0.34,1.56,0.64,1);
+  --duration-fast: 0.2s; --duration-normal: 0.4s; --duration-slow: 0.8s;
+}
+
+html { scroll-behavior: smooth; }
+body {
+  font-family: 'Segoe UI', system-ui, sans-serif;
+  background: var(--void); color: var(--metal);
+  min-height: 100vh; overflow-x: hidden; line-height: 1.7;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ── NAV ── */
+.glass-nav {
+  position: fixed; top: 0; left: 0; right: 0;
+  background: rgba(10,10,10,0.7); backdrop-filter: blur(var(--glass-blur-lg));
+  -webkit-backdrop-filter: blur(var(--glass-blur-lg));
+  border-bottom: 1px solid var(--glass-border);
+  padding: 0 2rem; z-index: var(--z-nav);
+  display: flex; align-items: center; justify-content: space-between;
+  height: 64px;
+}
+.nav-logo {
+  font-weight: 600; letter-spacing: 0.05em; color: var(--earth);
+  display: flex; align-items: center; gap: 0.5rem;
+  white-space: nowrap; font-size: 0.9rem;
+}
+.nav-links {
+  display: flex; gap: 2rem; list-style: none; padding: 0; margin: 0; align-items: center;
+}
+.nav-links a {
+  font-size: 0.9rem; font-weight: 500; letter-spacing: 0.02em;
+  color: rgba(232,232,232,0.7); position: relative;
+}
+.nav-links a:hover { color: var(--metal); }
+.nav-links a::after { display: none; }
+
+/* ── TYPOGRAPHY ── */
+h1 { font-size: clamp(1.4rem,2.5vw,1.8rem); font-weight: 400; letter-spacing: 0.08em; text-transform: uppercase; color: var(--earth); }
+h2 { font-size: clamp(2.2rem,5vw,4rem); font-weight: 200; letter-spacing: -0.02em; line-height: 1.1; color: var(--metal); }
+h3 { font-size: clamp(1.3rem,2.5vw,1.8rem); font-weight: 400; color: var(--metal); }
+h4 { font-size: clamp(1.1rem,2vw,1.3rem); font-weight: 500; color: var(--metal); }
+h5 { font-size: 0.85rem; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; color: var(--earth); }
+h6 { font-size: 0.75rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: rgba(232,232,232,0.4); }
+p { font-size: clamp(0.95rem,1.2vw,1.1rem); color: rgba(232,232,232,0.75); max-width: 65ch; }
+a { color: var(--water); text-decoration: none; transition: color var(--duration-fast) var(--ease-smooth); position: relative; }
+a:hover { color: var(--earth); }
+a::after { content: ''; position: absolute; bottom: -2px; left: 0; width: 0; height: 1px; background: var(--earth); transition: width var(--duration-normal) var(--ease-smooth); }
+a:hover::after { width: 100%; }
+strong { font-weight: 600; color: var(--metal); }
+code { font-family: 'SF Mono','Fira Code',monospace; font-size: 0.85em; background: rgba(255,255,255,0.05); padding: 0.15em 0.4em; border-radius: 4px; color: var(--wood); }
+hr { border: none; height: 1px; background: linear-gradient(90deg,transparent,var(--glass-border),transparent); margin: 0; }
+
+/* ── SECTIONS ── */
+.section { position: relative; padding: clamp(3rem,8vw,8rem) clamp(1.5rem,5vw,4rem); max-width: 1400px; margin: 0 auto; z-index: var(--z-content); }
+.section-narrow { max-width: 900px; }
+.section > * + * { margin-top: 2.5rem; }
+.section > .section-header + * { margin-top: 3.5rem; }
+.section-header { text-align: center; max-width: 700px; margin-left: auto; margin-right: auto; }
+.section-header > * + * { margin-top: 1rem; }
+
+/* ── GLASS CARD ── */
+.glass-card {
+  position: relative; background: var(--glass-bg);
+  backdrop-filter: blur(var(--glass-blur)); -webkit-backdrop-filter: blur(var(--glass-blur));
+  border: 1px solid var(--glass-border); border-radius: 20px; padding: 2rem;
+  z-index: var(--z-card); transition: all var(--duration-normal) var(--ease-smooth);
+  transform-style: preserve-3d; perspective: var(--perspective); overflow: hidden;
+}
+.glass-card::before {
+  content: ''; position: absolute; inset: 0; border-radius: inherit; padding: 1.5px;
+  background: linear-gradient(135deg,rgba(255,255,255,0.15) 0%,rgba(255,255,255,0.03) 50%,rgba(255,255,255,0.1) 100%);
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor; mask-composite: exclude;
+  pointer-events: none; z-index: 1;
+}
+.glass-card::after {
+  content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%;
+  background: conic-gradient(from 0deg,transparent 0%,rgba(201,169,110,0.03) 10%,rgba(74,144,164,0.03) 25%,transparent 35%,rgba(199,91,57,0.02) 50%,rgba(107,158,117,0.03) 65%,transparent 75%,rgba(201,169,110,0.02) 85%,transparent 100%);
+  animation: holo-rotate 12s linear infinite; pointer-events: none; z-index: 0;
+  opacity: 0; transition: opacity var(--duration-normal) var(--ease-smooth);
+}
+.glass-card:hover { background: var(--glass-bg-hover); border-color: var(--glass-border-hover); box-shadow: var(--glass-shadow-lg); transform: translateY(-4px) translateZ(20px); }
+.glass-card:hover::after { opacity: 1; }
+.glass-card > * { position: relative; z-index: 2; }
+
+/* ── HOLO OVERLAY ── */
+.holo-overlay { position: relative; overflow: hidden; }
+.holo-overlay::before {
+  content: ''; position: absolute; inset: 0;
+  background: linear-gradient(105deg,transparent 40%,rgba(201,169,110,0.08) 45%,rgba(74,144,164,0.08) 50%,rgba(199,91,57,0.06) 55%,transparent 60%);
+  transform: translateX(-100%); transition: transform 0.6s var(--ease-smooth);
+  pointer-events: none; z-index: 3;
+}
+.holo-overlay:hover::before { transform: translateX(100%); }
+
+/* ── BUTTONS ── */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem;
+  font-family: inherit; font-size: 0.95rem; font-weight: 500; letter-spacing: 0.02em;
+  padding: 0.875rem 1.75rem; border-radius: 12px; border: 1px solid transparent;
+  cursor: pointer; transition: all var(--duration-fast) var(--ease-smooth);
+  position: relative; overflow: hidden; transform-style: preserve-3d;
+}
+.btn-glass { background: var(--glass-bg); border-color: var(--glass-border); color: var(--metal); backdrop-filter: blur(12px); }
+.btn-glass:hover { background: var(--glass-bg-hover); border-color: var(--glass-border-hover); transform: translateY(-2px) translateZ(10px); box-shadow: 0 8px 24px rgba(0,0,0,0.3); }
+.btn-primary { background: linear-gradient(135deg,var(--earth),rgba(201,169,110,0.8)); color: var(--void); border-color: transparent; }
+.btn-primary:hover { transform: translateY(-2px) translateZ(10px); box-shadow: 0 8px 32px rgba(201,169,110,0.3); }
+
+/* ── GRID ── */
+.grid { display: grid; gap: 1.5rem; }
+.grid-2 { grid-template-columns: repeat(auto-fit,minmax(300px,1fr)); }
+.grid-3 { grid-template-columns: repeat(auto-fit,minmax(250px,1fr)); }
+.grid-4 { grid-template-columns: repeat(auto-fit,minmax(200px,1fr)); }
+
+/* ── DEPTH LAYERS ── */
+.depth-layer { position: fixed; inset: 0; pointer-events: none; z-index: var(--z-bg); overflow: hidden; }
+.orb { position: absolute; border-radius: 50%; filter: blur(80px); opacity: 0.15; animation: orb-float 20s ease-in-out infinite; }
+.orb-1 { width: 500px; height: 500px; background: var(--earth); top: -10%; left: -5%; animation-delay: 0s; }
+.orb-2 { width: 400px; height: 400px; background: var(--water); bottom: -10%; right: -5%; animation-delay: -7s; }
+.orb-3 { width: 300px; height: 300px; background: var(--fire); top: 40%; left: 60%; animation-delay: -14s; opacity: 0.08; }
+
+/* ── KEYFRAMES ── */
+@keyframes holo-rotate { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+@keyframes orb-float { 0%,100% { transform: translate(0,0) scale(1); } 25% { transform: translate(30px,-20px) scale(1.05); } 50% { transform: translate(-20px,30px) scale(0.95); } 75% { transform: translate(20px,20px) scale(1.02); } }
+
+/* ── DEMO STYLES ── */
+.hero-eyebrow { display: inline-block; padding: 0.5rem 1.25rem; background: rgba(201,169,110,0.08); border: 1px solid rgba(201,169,110,0.15); border-radius: 100px; font-size: 0.75rem; color: var(--earth); letter-spacing: 0.1em; text-transform: uppercase; font-weight: 500; }
+.hero-title { font-size: clamp(2.5rem,6vw,5rem); font-weight: 200; letter-spacing: -0.02em; line-height: 1.1; background: linear-gradient(135deg,var(--metal) 0%,var(--earth) 50%,var(--water) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; max-width: 900px; }
+.hero-subtitle { margin-top: 1.5rem; max-width: 560px; margin-left: auto; margin-right: auto; font-size: 1.05rem; color: rgba(232,232,232,0.6); }
+.hero-actions { margin-top: 2.5rem; display: flex; gap: 1rem; flex-wrap: wrap; justify-content: center; align-items: center; }
+.tag-group { margin-top: 1.5rem; display: flex; gap: 0.5rem; flex-wrap: wrap; }
+.demo-tag { display: inline-block; padding: 0.4rem 1rem; background: rgba(201,169,110,0.1); border: 1px solid rgba(201,169,110,0.2); border-radius: 100px; font-size: 0.8rem; color: var(--earth); letter-spacing: 0.05em; text-transform: uppercase; }
+.card-icon { width: 48px; height: 48px; min-width: 48px; min-height: 48px; aspect-ratio: 1/1; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; flex-shrink: 0; margin-bottom: 1.5rem; }
+.glass-footer { position: relative; z-index: var(--z-content); padding: 4rem 2rem; text-align: center; border-top: 1px solid var(--glass-border); background: linear-gradient(180deg,transparent,rgba(255,255,255,0.01)); }
+.footer-brand { font-size: 0.85rem; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; color: var(--earth); margin-bottom: 0.75rem; }
+.footer-copy { font-size: 0.8rem; color: rgba(232,232,232,0.35); margin-bottom: 1.5rem; }
+.footer-links { display: flex; justify-content: center; gap: 1.5rem; list-style: none; padding: 0; margin: 0; }
+.footer-links a { font-size: 0.8rem; color: rgba(232,232,232,0.4); }
+.footer-links a:hover { color: var(--metal); }
+.footer-links a::after { display: none; }
+.footer-sig { margin-top: 2rem; font-size: 0.75rem; color: rgba(232,232,232,0.2); letter-spacing: 0.05em; }
+
+/* ── RESOURCE LINKS ── */
+.resource-link {
+  display: flex; align-items: center; gap: 0.75rem;
+  padding: 0.75rem 1rem; background: rgba(255,255,255,0.02);
+  border: 1px solid var(--glass-border); border-radius: 10px;
+  transition: all var(--duration-fast) var(--ease-smooth);
+  font-size: 0.85rem; color: var(--metal);
+}
+.resource-link:hover { background: var(--glass-bg-hover); border-color: var(--glass-border-hover); transform: translateX(4px); }
+.resource-link:hover a { color: var(--earth); }
+.resource-link .link-icon { font-size: 1.1rem; flex-shrink: 0; }
+.resource-link .link-meta { font-size: 0.75rem; color: rgba(232,232,232,0.4); margin-top: 2px; }
+
+/* ── AGENT STATUS BADGE ── */
+.agent-status { display: inline-flex; align-items: center; gap: 0.4rem; font-size: 0.8rem; }
+.agent-status::before { content: ''; width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+.status-idle::before { background: var(--earth); box-shadow: 0 0 6px var(--earth); }
+.status-active::before { background: var(--wood); box-shadow: 0 0 6px var(--wood); animation: pulse 2s ease-in-out infinite; }
+.status-busy::before { background: var(--fire); box-shadow: 0 0 6px var(--fire); animation: pulse 1s ease-in-out infinite; }
+@keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.4; } }
+
+/* ── METRIC VALUE ── */
+.metric-value { font-size: 2rem; font-weight: 200; color: var(--metal); line-height: 1; }
+.metric-label { font-size: 0.8rem; color: rgba(232,232,232,0.5); text-transform: uppercase; letter-spacing: 0.05em; }
+
+/* ── SCROLLBAR ── */
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: var(--void); }
+::-webkit-scrollbar-thumb { background: var(--glass-border); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: var(--glass-border-hover); }
+::selection { background: rgba(201,169,110,0.3); color: var(--metal); }
+
+/* ── RESPONSIVE ── */
+@media (max-width: 768px) {
+  .glass-nav { padding: 0 1rem; height: 56px; }
+  .nav-links { gap: 1rem; }
+  .glass-card { padding: 1.5rem; }
+  .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+}
+</style>
+<base target="_blank">
+</head>
+<body>
+
+<!-- DEPTH LAYERS -->
+<div class="depth-layer">
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+  <div class="orb orb-3"></div>
+</div>
+
+<!-- NAV -->
+<nav class="glass-nav">
+  <div class="nav-logo">◈ JARVIS DASHBOARD</div>
+  <ul class="nav-links">
+    <li><a href="#harness">Harness</a></li>
+    <li><a href="#agents">Agents</a></li>
+    <li><a href="#resources">Resources</a></li>
+    <li><a href="#dashboard">Dashboard</a></li>
+  </ul>
+</nav>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     HERO
+     ═══════════════════════════════════════════════════════════════ -->
+<section class="section" style="padding-top: 10rem;">
+  <div style="text-align: center;">
+    <span class="hero-eyebrow">Multi-Agent Harness Architecture</span>
+    <h1 class="hero-title" style="margin: 2rem auto 0;">Agent = Model + Harness</h1>
+    <p class="hero-subtitle">
+      The harness is the infrastructure layer that transforms model reasoning into real-world action.
+      Brain + Body, Senses, Notebook & Todo List.
+    </p>
+    <div class="hero-actions">
+      <button class="btn btn-primary" onclick="document.getElementById('harness').scrollIntoView({behavior:'smooth'})">Explore Harness</button>
+      <button class="btn btn-glass" onclick="document.getElementById('resources').scrollIntoView({behavior:'smooth'})">View Resources</button>
+    </div>
+  </div>
+</section>
+
+<hr>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     CORE VALUE — Why Harness Matters
+     ═══════════════════════════════════════════════════════════════ -->
+<section class="section" id="harness">
+  <div class="section-header">
+    <h5>Performance Leverage</h5>
+    <h2>The Harness Advantage</h2>
+    <p>Optimizing the harness yields outsized returns compared to model swapping alone.</p>
+  </div>
+
+  <div class="grid grid-3">
+    <article class="glass-card holo-overlay">
+      <div class="metric-value">22 pts</div>
+      <div class="metric-label" style="margin-top: 0.5rem;">SWE-bench Gain</div>
+      <p style="margin-top: 1rem; font-size: 0.9rem;">Score improvement from switching Harness vs. only 1 pt from switching Model.</p>
+    </article>
+
+    <article class="glass-card holo-overlay">
+      <div class="metric-value">30 → Top 5</div>
+      <div class="metric-label" style="margin-top: 0.5rem;">Terminal Bench 2.0</div>
+      <p style="margin-top: 1rem; font-size: 0.9rem;">LangChain jumped rankings by improving Harness scaffolding — same model, better runtime.</p>
+    </article>
+
+    <article class="glass-card holo-overlay">
+      <div class="metric-value">98.4%</div>
+      <div class="metric-label" style="margin-top: 0.5rem;">of Claude Code</div>
+      <p style="margin-top: 1rem; font-size: 0.9rem;">Of ~512K lines of code, only 1.6% is model inference. The rest is Harness.</p>
+    </article>
+  </div>
+</section>
+
+<hr>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     HARNESS MODULES — The Architecture
+     ═══════════════════════════════════════════════════════════════ -->
+<section class="section" id="agents">
+  <div class="section-header">
+    <h5>Architecture</h5>
+    <h2>Harness Modules</h2>
+    <p>The complete scaffolding that turns a text generator into an autonomous agent.</p>
+  </div>
+
+  <div class="grid grid-3">
+    <article class="glass-card holo-overlay">
+      <div class="card-icon" style="background: linear-gradient(135deg,var(--earth),var(--water));">🔄</div>
+      <h3>Agent Loop</h3>
+      <p>Plan → Execute → Observe → Iterate. The core execution cycle driving multi-step tasks with configurable iteration limits.</p>
+    </article>
+
+    <article class="glass-card holo-overlay">
+      <div class="card-icon" style="background: linear-gradient(135deg,var(--water),var(--wood));">🛠️</div>
+      <h3>Tools & Interaction</h3>
+      <p>File I/O, Shell execution, Web search, CodeAct. Function invocation with auto tool-calling loop.</p>
+    </article>
+
+    <article class="glass-card holo-overlay">
+      <div class="card-icon" style="background: linear-gradient(135deg,var(--wood),var(--earth));">🧠</div>
+      <h3>Memory & State</h3>
+      <p>Session persistence, context compaction, file memory. Prevents overflow while retaining cross-turn coherence.</p>
+    </article>
+
+    <article class="glass-card holo-overlay">
+      <div class="card-icon" style="background: linear-gradient(135deg,var(--fire),var(--earth));">🛡️</div>
+      <h3>Safety & Guardrails</h3>
+      <p>Workspace constraints, sandbox isolation, human-in-the-loop approval. "Don't ask again" standing rules.</p>
+    </article>
+
+    <article class="glass-card holo-overlay">
+      <div class="card-icon" style="background: linear-gradient(135deg,var(--purple),var(--water));">📋</div>
+      <h3>Skills System</h3>
+      <p>Progressive loading of domain expertise via SKILL.md. Avoids prompt bloat by loading capabilities on demand.</p>
+    </article>
+
+    <article class="glass-card holo-overlay">
+      <div class="card-icon" style="background: linear-gradient(135deg,var(--earth),var(--fire));">📡</div>
+      <h3>Telemetry</h3>
+      <p>OpenTelemetry tracing, logs, observability. Monitor and debug agent behavior across long-running sessions.</p>
+    </article>
+  </div>
+</section>
+
+<hr>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     AGENT LOOP VISUAL
+     ═══════════════════════════════════════════════════════════════ -->
+<section class="section section-narrow">
+  <div class="section-header">
+    <h5>Execution Flow</h5>
+    <h2>The Agent Loop</h2>
+  </div>
+  <div class="glass-card" style="text-align: center; padding: 3rem 2rem;">
+    <div style="display: flex; align-items: center; justify-content: center; gap: 12px; flex-wrap: wrap; font-size: 0.9rem;">
+      <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; padding: 12px 20px; color: var(--earth);">User Request</div>
+      <span style="color: #444;">→</span>
+      <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; padding: 12px 20px; color: var(--water);">Plan</div>
+      <span style="color: #444;">→</span>
+      <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; padding: 12px 20px; color: var(--wood);">Execute</div>
+      <span style="color: #444;">→</span>
+      <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; padding: 12px 20px; color: var(--fire);">Observe</div>
+      <span style="color: #444;">→</span>
+      <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; padding: 12px 20px; color: #888;">Repeat</div>
+    </div>
+  </div>
+</section>
+
+<hr>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     MULTI-AGENT DASHBOARD — JARVIS Style
+     ═══════════════════════════════════════════════════════════════ -->
+<section class="section" id="dashboard">
+  <div class="section-header">
+    <h5>Live Operations</h5>
+    <h2>Agent Fleet Dashboard</h2>
+    <p>Monitor and orchestrate multiple agent instances in real time.</p>
+  </div>
+
+  <div class="grid grid-2">
+    <!-- Agent 1 -->
+    <article class="glass-card holo-overlay">
+      <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem;">
+        <div>
+          <h4 style="margin-bottom: 0.25rem;">Code Weaver</h4>
+          <span class="agent-status status-active">Active</span>
+        </div>
+        <div style="font-size: 0.75rem; color: rgba(232,232,232,0.4);">ID: #CW-7842</div>
+      </div>
+      <p style="font-size: 0.9rem; margin-bottom: 1rem;">Refactoring authentication module. 47 files analyzed, 12 modified.</p>
+      <div style="display: flex; gap: 1rem; font-size: 0.8rem; color: rgba(232,232,232,0.5);">
+        <span>Tokens: 12.4K</span>
+        <span>Turns: 8</span>
+        <span>Tools: 23</span>
+      </div>
+    </article>
+
+    <!-- Agent 2 -->
+    <article class="glass-card holo-overlay">
+      <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem;">
+        <div>
+          <h4 style="margin-bottom: 0.25rem;">Research Scout</h4>
+          <span class="agent-status status-busy">Busy</span>
+        </div>
+        <div style="font-size: 0.75rem; color: rgba(232,232,232,0.4);">ID: #RS-2901</div>
+      </div>
+      <p style="font-size: 0.9rem; margin-bottom: 1rem;">Gathering competitive intelligence on drone swarm defense market. 6 sources indexed.</p>
+      <div style="display: flex; gap: 1rem; font-size: 0.8rem; color: rgba(232,232,232,0.5);">
+        <span>Tokens: 8.7K</span>
+        <span>Turns: 14</span>
+        <span>Tools: 31</span>
+      </div>
+    </article>
+
+    <!-- Agent 3 -->
+    <article class="glass-card holo-overlay">
+      <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem;">
+        <div>
+          <h4 style="margin-bottom: 0.25rem;">Test Runner</h4>
+          <span class="agent-status status-idle">Idle</span>
+        </div>
+        <div style="font-size: 0.75rem; color: rgba(232,232,232,0.4);">ID: #TR-5512</div>
+      </div>
+      <p style="font-size: 0.9rem; margin-bottom: 1rem;">Waiting for Code Weaver to complete. Will execute full test suite on completion.</p>
+      <div style="display: flex; gap: 1rem; font-size: 0.8rem; color: rgba(232,232,232,0.5);">
+        <span>Tokens: 0</span>
+        <span>Turns: 0</span>
+        <span>Tools: 0</span>
+      </div>
+    </article>
+
+    <!-- Agent 4 -->
+    <article class="glass-card holo-overlay">
+      <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem;">
+        <div>
+          <h4 style="margin-bottom: 0.25rem;">Doc Synthesizer</h4>
+          <span class="agent-status status-active">Active</span>
+        </div>
+        <div style="font-size: 0.75rem; color: rgba(232,232,232,0.4);">ID: #DS-1138</div>
+      </div>
+      <p style="font-size: 0.9rem; margin-bottom: 1rem;">Generating API documentation from OpenAPI spec. 3 endpoints documented, 12 remaining.</p>
+      <div style="display: flex; gap: 1rem; font-size: 0.8rem; color: rgba(232,232,232,0.5);">
+        <span>Tokens: 5.2K</span>
+        <span>Turns: 6</span>
+        <span>Tools: 9</span>
+      </div>
+    </article>
+  </div>
+</section>
+
+<hr>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     RESOURCES — Links to implementations
+     ═══════════════════════════════════════════════════════════════ -->
+<section class="section" id="resources">
+  <div class="section-header">
+    <h5>Reference Implementations</h5>
+    <h2>Harness Resources</h2>
+    <p>Verified links to the major harness implementations and research.</p>
+  </div>
+
+  <div class="grid grid-2">
+    <!-- Column 1: Official & Research -->
+    <div>
+      <h5 style="margin-bottom: 1rem;">Official & Research</h5>
+
+      <a href="https://devblogs.microsoft.com/agent-framework/the-microsoft-agent-framework-harness-is-now-released/" target="_blank" class="resource-link" style="margin-bottom: 0.75rem;">
+        <span class="link-icon">🏢</span>
+        <div>
+          <div>Microsoft Agent Framework Harness</div>
+          <div class="link-meta">Python + .NET · Batteries-included · July 2026</div>
+        </div>
+      </a>
+
+      <a href="https://huggingface.co/blog/Svngoku/meta-harness-end-to-end-optimization-of-model" target="_blank" class="resource-link" style="margin-bottom: 0.75rem;">
+        <span class="link-icon">📄</span>
+        <div>
+          <div>Meta-Harness: End-to-End Optimization</div>
+          <div class="link-meta">Stanford IRIS Lab · arXiv:2603.28052 · March 2026</div>
+        </div>
+      </a>
+
+      <a href="https://github.com/ai-boost/awesome-harness-engineering" target="_blank" class="resource-link" style="margin-bottom: 0.75rem;">
+        <span class="link-icon">📚</span>
+        <div>
+          <div>Awesome Harness Engineering</div>
+          <div class="link-meta">Curated list of harness primitives, memory systems, and implementations</div>
+        </div>
+      </a>
+
+      <a href="https://github.com/Picrew/awesome-agent-harness" target="_blank" class="resource-link" style="margin-bottom: 0.75rem;">
+        <span class="link-icon">📋</span>
+        <div>
+          <div>Awesome Agent Harness</div>
+          <div class="link-meta">Comprehensive comparison table of 30+ harness implementations</div>
+        </div>
+      </a>
+    </div>
+
+    <!-- Column 2: Open Source Implementations -->
+    <div>
+      <h5 style="margin-bottom: 1rem;">Open Source Implementations</h5>
+
+      <a href="https://opencode.ai" target="_blank" class="resource-link" style="margin-bottom: 0.75rem;">
+        <span class="link-icon">💻</span>
+        <div>
+          <div>OpenCode</div>
+          <div class="link-meta">Terminal-native · 179K+ stars · 75+ LLM providers · MIT</div>
+        </div>
+      </a>
+
+      <a href="https://pi.dev" target="_blank" class="resource-link" style="margin-bottom: 0.75rem;">
+        <span class="link-icon">🔧</span>
+        <div>
+          <div>Pi (by Mario Zechner)</div>
+          <div class="link-meta">Minimal TypeScript harness · Tree sessions · 65K+ stars</div>
+        </div>
+      </a>
+
+      <a href="https://github.com/Aider-AI/aider" target="_blank" class="resource-link" style="margin-bottom: 0.75rem;">
+        <span class="link-icon">🤝</span>
+        <div>
+          <div>Aider</div>
+          <div class="link-meta">Git-native pair programming · 41K+ stars · 100+ LLMs</div>
+        </div>
+      </a>
+
+      <a href="https://github.com/cline/cline" target="_blank" class="resource-link" style="margin-bottom: 0.75rem;">
+        <span class="link-icon">🎯</span>
+        <div>
+          <div>Cline</div>
+          <div class="link-meta">VS Code extension · 61K+ stars · Plan/Act mode · MCP</div>
+        </div>
+      </a>
+
+      <a href="https://github.com/HKUDS/OpenHarness" target="_blank" class="resource-link" style="margin-bottom: 0.75rem;">
+        <span class="link-icon">🔌</span>
+        <div>
+          <div>OpenHarness (HKUDS)</div>
+          <div class="link-meta">Lightweight agent infra · ohmo personal agent · MCP support</div>
+        </div>
+      </a>
+
+      <a href="https://github.com/langchain-ai/deepagents" target="_blank" class="resource-link" style="margin-bottom: 0.75rem;">
+        <span class="link-icon">🌊</span>
+        <div>
+          <div>Deep Agents (LangChain)</div>
+          <div class="link-meta">Batteries-included · Planning · Sub-agents · Auto-summarization</div>
+        </div>
+      </a>
+    </div>
+  </div>
+</section>
+
+<hr>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     FOOTER
+     ═══════════════════════════════════════════════════════════════ -->
+<footer class="glass-footer">
+  <div class="footer-brand">◈ JARVIS Dashboard</div>
+  <p class="footer-copy">Multi-Agent Harness Design System — Built with pure CSS</p>
+  <ul class="footer-links">
+    <li><a href="#harness">Harness</a></li>
+    <li><a href="#agents">Agents</a></li>
+    <li><a href="#resources">Resources</a></li>
+    <li><a href="#dashboard">Dashboard</a></li>
+  </ul>
+  <p class="footer-sig">Ocean Way Love Yours Open Mind</p>
+</footer>
+
+</body>
+</html>
