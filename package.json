@@ -11,12 +11,21 @@
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.0.0",
+    "cors": "^2.8.5",
     "express": "^4.21.0",
-    "cors": "^2.8.5"
+    "ws": "^8.21.3"
   },
   "engines": {
     "node": ">=18.0.0"
   },
-  "keywords": ["mcp", "n8n", "continue.dev", "claude", "cursor", "kimi", "ai-agent"],
+  "keywords": [
+    "mcp",
+    "n8n",
+    "continue.dev",
+    "claude",
+    "cursor",
+    "kimi",
+    "ai-agent"
+  ],
   "license": "MIT"
 }

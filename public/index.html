@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Plane Tracker 3D</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    :root {
+      --bg: #05070a;
+      --panel: #0d1117;
+      --border: #1f2937;
+      --text: #e5e7eb;
+      --muted: #6b7280;
+      --accent: #3b82f6;
+      --accent2: #06b6d4;
+      --green: #22c55e;
+      --red: #ef4444;
+    }
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      height: 100vh;
+      overflow: hidden;
+    }
+    #app { display: flex; height: 100vh; }
+    #sidebar {
+      width: 340px;
+      background: var(--panel);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      flex-shrink: 0;
+      z-index: 10;
+    }
+    #sidebar header {
+      padding: 20px;
+      border-bottom: 1px solid var(--border);
+    }
+    #sidebar header h1 {
+      font-size: 1.3rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .stats-row {
+      display: flex;
+      gap: 10px;
+      margin-top: 12px;
+    }
+    .stat-box {
+      flex: 1;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px;
+      text-align: center;
+    }
+    .stat-box .value {
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: var(--accent);
+    }
+    .stat-box .label {
+      font-size: 0.65rem;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-top: 2px;
+    }
+    .controls {
+      padding: 14px 18px;
+      border-bottom: 1px solid var(--border);
+    }
+    .controls input {
+      width: 100%;
+      padding: 10px 14px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text);
+      font-size: 0.9rem;
+      margin-bottom: 10px;
+      outline: none;
+    }
+    .controls input:focus { border-color: var(--accent); }
+    .btn-group { display: flex; gap: 8px; }
+    .btn {
+      flex: 1;
+      padding: 10px;
+      border: none;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn-primary { background: var(--accent); color: white; }
+    .btn-primary:hover { background: #2563eb; }
+    .btn-ghost { background: var(--bg); color: var(--text); border: 1px solid var(--border); }
+    .btn-ghost:hover { border-color: var(--accent); }
+    .flight-list { flex: 1; overflow-y: auto; }
+    .flight-item {
+      padding: 12px 18px;
+      border-bottom: 1px solid var(--border);
+      cursor: pointer;
+      transition: background 0.15s;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .flight-item:hover { background: rgba(59,130,246,0.08); }
+    .flight-item.active { background: rgba(59,130,246,0.15); border-left: 3px solid var(--accent); }
+    .flight-icon {
+      width: 34px; height: 34px;
+      border-radius: 50%;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.9rem;
+      flex-shrink: 0;
+    }
+    .flight-info { flex: 1; min-width: 0; }
+    .flight-info .callsign {
+      font-weight: 600;
+      font-size: 0.92rem;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .flight-info .meta {
+      font-size: 0.72rem;
+      color: var(--muted);
+      margin-top: 2px;
+    }
+    .flight-alt {
+      text-align: right;
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--accent2);
+    }
+    .flight-alt .unit { font-size: 0.68rem; color: var(--muted); font-weight: 400; }
+
+    #canvas-container {
+      flex: 1;
+      position: relative;
+      background: var(--bg);
+    }
+    #globe-canvas { width: 100%; height: 100%; display: block; }
+
+    .overlay-top {
+      position: absolute;
+      top: 16px; right: 16px;
+      background: rgba(13,17,23,0.85);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 10px 14px;
+      z-index: 5;
+      font-size: 0.78rem;
+      color: var(--muted);
+      backdrop-filter: blur(8px);
+    }
+    .overlay-top .source { color: var(--accent); font-weight: 600; }
+    .live-dot {
+      display: inline-block;
+      width: 7px; height: 7px;
+      background: var(--green);
+      border-radius: 50%;
+      margin-right: 6px;
+      animation: pulse 2s infinite;
+    }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+    .detail-panel {
+      position: absolute;
+      bottom: 16px; left: 16px;
+      background: rgba(13,17,23,0.9);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 18px;
+      z-index: 5;
+      min-width: 260px;
+      display: none;
+      backdrop-filter: blur(8px);
+    }
+    .detail-panel.show { display: block; }
+    .detail-panel h3 {
+      font-size: 1rem;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .detail-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+    .detail-item .label {
+      font-size: 0.65rem;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .detail-item .value {
+      font-size: 0.95rem;
+      font-weight: 600;
+      margin-top: 2px;
+    }
+    .detail-item .value.on-ground { color: var(--green); }
+    .detail-item .value.airborne { color: var(--accent2); }
+
+    .tooltip {
+      position: absolute;
+      background: rgba(13,17,23,0.95);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 8px 12px;
+      font-size: 0.8rem;
+      pointer-events: none;
+      z-index: 20;
+      display: none;
+      white-space: nowrap;
+    }
+    .tooltip.show { display: block; }
+
+    ::-webkit-scrollbar { width: 5px; }
+    ::-webkit-scrollbar-track { background: var(--panel); }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+    @media (max-width: 900px) { #sidebar { width: 280px; } }
+    @media (max-width: 700px) {
+      #app { flex-direction: column; }
+      #sidebar { width: 100%; height: 40vh; }
+      #canvas-container { height: 60vh; }
+    }
+  </style>
+</head>
+<body>
+  <div id="app">
+    <aside id="sidebar">
+      <header>
+        <h1>&#127758; Plane Tracker 3D</h1>
+        <div class="stats-row">
+          <div class="stat-box">
+            <div class="value" id="stat-total">—</div>
+            <div class="label">Flights</div>
+          </div>
+          <div class="stat-box">
+            <div class="value" id="stat-alt">—</div>
+            <div class="label">Avg Alt</div>
+          </div>
+          <div class="stat-box">
+            <div class="value" id="stat-speed">—</div>
+            <div class="label">Avg Spd</div>
+          </div>
+        </div>
+      </header>
+      <div class="controls">
+        <input type="text" id="search" placeholder="Search callsign or ICAO..." />
+        <div class="btn-group">
+          <button class="btn btn-primary" id="btn-refresh">&#128259; Refresh</button>
+          <button class="btn btn-ghost" id="btn-auto">&#9658; Auto</button>
+        </div>
+      </div>
+      <div class="flight-list" id="flight-list"></div>
+    </aside>
+    <div id="canvas-container">
+      <canvas id="globe-canvas"></canvas>
+      <div class="overlay-top">
+        <span class="live-dot"></span>
+        <span id="source-label">Connecting...</span>
+      </div>
+      <div class="detail-panel" id="detail-panel">
+        <h3>&#9992;&#65039; <span id="detail-callsign">—</span></h3>
+        <div class="detail-grid">
+          <div class="detail-item"><div class="label">ICAO</div><div class="value" id="detail-icao">—</div></div>
+          <div class="detail-item"><div class="label">Origin</div><div class="value" id="detail-origin">—</div></div>
+          <div class="detail-item"><div class="label">Altitude</div><div class="value" id="detail-alt">—</div></div>
+          <div class="detail-item"><div class="label">Speed</div><div class="value" id="detail-speed">—</div></div>
+          <div class="detail-item"><div class="label">Heading</div><div class="value" id="detail-heading">—</div></div>
+          <div class="detail-item"><div class="label">Status</div><div class="value" id="detail-status">—</div></div>
+        </div>
+      </div>
+      <div class="tooltip" id="tooltip"></div>
+    </div>
+  </div>
+
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+      "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+    }
+  }
+  </script>
+  <script type="module" src="app.js"></script>
+</body>
+</html>
