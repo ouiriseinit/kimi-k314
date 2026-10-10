@@ -1,4 +1,4 @@
-// file-tree.js – Updated to respect .gitignore, ignore node_modules, and copy to clipboard
+// file-tree.js – Updated to respect .gitignore, ignore node_modules and .git, and copy to clipboard
 
 import * as fs from 'fs';
 import path from 'path';
@@ -59,6 +59,7 @@ function buildTree(filePath) {
                 dirName = fs.readdirSync(filePath).filter(item => {
                     return item !== '.gitignore' &&
                            item !== 'node_modules' &&
+                           item !== '.git' &&
                            !ignoredPatterns.some(pattern =>
                                path.basename(item) === pattern || item.startsWith(pattern + '/')
                            );

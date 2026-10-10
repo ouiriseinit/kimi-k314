@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Superformula Hypercube Lab</title>
+<style>
+  :root{color-scheme:dark;--bg:#080b12;--panel:#101722;--line:#253244;--text:#e8f0fb;--muted:#8fa2ba;--cyan:#5ce6ed;--blue:#629cff;--pink:#ff78c9}
+  *{box-sizing:border-box} html,body{height:100%;margin:0;background:var(--bg);color:var(--text);font:14px/1.45 Inter,ui-sans-serif,system-ui,-apple-system,Segoe UI,sans-serif}
+  body{display:flex;flex-direction:column;min-height:100vh;background:radial-gradient(ellipse at 50% 0%,#132033 0%,#080b12 58%)}
+  header{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:17px 22px;border-bottom:1px solid #1c2938;background:#080c13cc;backdrop-filter:blur(12px)}
+  .brand{display:flex;align-items:center;gap:12px}.mark{width:34px;height:34px;border:1px solid #3b8493;border-radius:10px;display:grid;place-items:center;color:var(--cyan);font-size:19px;box-shadow:0 0 22px #5ce6ed22}
+  h1{font-size:15px;letter-spacing:.09em;text-transform:uppercase;margin:0;font-weight:700}.sub{font-size:11px;color:var(--muted);margin-top:2px;letter-spacing:.04em}
+  .tag{font-size:11px;color:#9ceef0;border:1px solid #2d6873;border-radius:99px;padding:5px 9px;white-space:nowrap}
+  main{display:grid;grid-template-columns:minmax(0,1fr) 310px;gap:14px;padding:14px;flex:1;min-height:0}
+  .stage,.panel{background:linear-gradient(150deg,#111a26ee,#0c121bee);border:1px solid var(--line);border-radius:15px;overflow:hidden;min-height:0}
+  .stage{display:flex;flex-direction:column;position:relative;min-height:480px}.stage-top{display:flex;justify-content:space-between;align-items:center;padding:13px 16px;border-bottom:1px solid #1d2a39;gap:10px}.stage-title{font-weight:650;font-size:12px;letter-spacing:.08em;text-transform:uppercase}.stage-hint{color:var(--muted);font-size:11px}
+  canvas{width:100%;height:100%;display:block;flex:1;min-height:400px;touch-action:none;cursor:grab}canvas:active{cursor:grabbing}
+  .overlay{position:absolute;left:17px;bottom:15px;display:flex;gap:7px;flex-wrap:wrap;pointer-events:none}.pill{border:1px solid #2a3b4c;background:#0b121bd9;color:#c2d2e4;padding:5px 8px;border-radius:7px;font-size:10px;letter-spacing:.03em}
+  .panel{padding:16px;overflow:auto}.panel h2{font-size:12px;text-transform:uppercase;letter-spacing:.1em;margin:0 0 14px;color:#dce9f7}.section{padding:0 0 16px;margin-bottom:16px;border-bottom:1px solid #202d3b}.section:last-child{border:0;margin:0;padding:0}
+  .label-row{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:11px 0 7px}.label-row label{font-size:12px;color:#c4d2e2}.value{font-variant-numeric:tabular-nums;font-size:11px;color:var(--cyan);background:#0b1d25;border:1px solid #1e424c;border-radius:5px;padding:2px 6px;min-width:42px;text-align:center}
+  input[type=range]{width:100%;accent-color:var(--cyan);height:15px;cursor:pointer}select,button{font:inherit;color:var(--text);background:#151f2c;border:1px solid #304155;border-radius:8px;padding:9px 10px}select{width:100%;cursor:pointer}button{cursor:pointer;transition:background .15s,border-color .15s}button:hover{background:#1c2b3c;border-color:#527184}button.primary{background:#12313a;border-color:#276571;color:#c4fbff}button.active{background:#163b43;border-color:#3aa7b4;color:#d3fcff}.actions{display:grid;grid-template-columns:1fr 1fr;gap:8px}.actions button{font-size:12px}.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:7px}.stat{border:1px solid #253447;background:#0b111a;border-radius:9px;padding:10px 8px}.stat small{display:block;color:var(--muted);font-size:10px;margin-bottom:5px}.stat strong{font-size:16px;font-weight:650;font-variant-numeric:tabular-nums}.note{color:var(--muted);font-size:11px;line-height:1.55}.footer{padding:9px 18px;color:#71849a;font-size:10px;border-top:1px solid #1a2634;display:flex;justify-content:space-between;gap:10px}
+  @media(max-width:850px){main{grid-template-columns:1fr}.stage{min-height:58vh}.panel{overflow:visible}.panel .section{max-width:none}.footer{flex-wrap:wrap}}
+  @media(max-width:480px){header{padding:13px}.tag{display:none}main{padding:8px;gap:8px}.stage-top{align-items:flex-start;flex-direction:column}.stage{min-height:420px}.panel{padding:13px}}
+</style>
+</head>
+<body>
+<header><div class="brand"><div class="mark">⌘</div><div><h1>Superformula Hypercube Lab</h1><div class="sub">Topology × generative geometry</div></div></div><div class="tag">INTERACTIVE STUDY · v1.0</div></header>
+<main>
+  <section class="stage">
+    <div class="stage-top"><div class="stage-title">Projected state space</div><div class="stage-hint">Drag to rotate · Scroll to zoom</div></div>
+    <canvas id="scene" aria-label="Interactive animated hypercube visualization"></canvas>
+    <div class="overlay"><span class="pill" id="dimensionPill">4D · TESSERACT</span><span class="pill" id="modePill">AUTO ROTATION ON</span><span class="pill">SUPERFORMULA SHELL</span></div>
+  </section>
+  <aside class="panel">
+    <div class="section"><h2>Topology</h2>
+      <div class="label-row"><label for="dimension">Hypercube dimension</label></div><select id="dimension"><option value="3">3D · Cube</option><option value="4" selected>4D · Tesseract</option><option value="5">5D · Penteract</option><option value="6">6D · Hexeract</option></select>
+      <div class="stats"><div class="stat"><small>VERTICES</small><strong id="vertices">16</strong></div><div class="stat"><small>EDGES</small><strong id="edges">32</strong></div><div class="stat"><small>FACES*</small><strong id="faces">24</strong></div></div>
+      <p class="note">*Square 2-faces. The dimension changes the connectivity; the superformula changes the radial placement.</p>
+    </div>
+    <div class="section"><h2>Superformula</h2>
+      <div class="label-row"><label for="m">Symmetry · m</label><output class="value" id="mOut">5.65</output></div><input id="m" type="range" min="2" max="12" step="0.05" value="5.65">
+      <div class="label-row"><label for="n1">Shape · n₁</label><output class="value" id="n1Out">7.83</output></div><input id="n1" type="range" min="0.5" max="18" step="0.05" value="7.83">
+      <div class="label-row"><label for="n2">Shape · n₂</label><output class="value" id="n2Out">7.07</output></div><input id="n2" type="range" min="0.5" max="18" step="0.05" value="7.07">
+      <div class="label-row"><label for="n3">Shape · n₃</label><output class="value" id="n3Out">7.07</output></div><input id="n3" type="range" min="0.5" max="18" step="0.05" value="7.07">
+      <div class="label-row"><label for="breath">Radial modulation</label><output class="value" id="breathOut">22%</output></div><input id="breath" type="range" min="0" max="55" step="1" value="22">
+    </div>
+    <div class="section"><h2>Motion & view</h2>
+      <div class="label-row"><label for="speed">Rotation speed</label><output class="value" id="speedOut">0.45×</output></div><input id="speed" type="range" min="0" max="1.5" step="0.05" value="0.45">
+      <div class="label-row"><label for="zoom">Zoom</label><output class="value" id="zoomOut">100%</output></div><input id="zoom" type="range" min="55" max="145" step="1" value="100">
+      <div class="actions"><button id="autoBtn" class="primary active">Ⅱ Pause motion</button><button id="resetBtn">↺ Reset view</button><button id="randomBtn">✳ Randomize shape</button><button id="edgesBtn" class="active">Edges: on</button></div>
+    </div>
+    <div class="section"><h2>Reading the model</h2><p class="note">Each vertex is a binary coordinate. Two vertices share an edge when exactly one bit differs. Higher-dimensional coordinates are rotated in pairs, then projected into the canvas. The superformula modulates each vertex's radius; it does not change which vertices are connected.</p></div>
+  </aside>
+</main>
+<div class="footer"><span>LOCAL HTML · NO LIBRARIES OR NETWORK REQUIRED</span><span>Topology stays discrete; projection is only a view.</span></div>
+<script>
+(() => {
+  const $ = id => document.getElementById(id);
+  const canvas = $('scene'), ctx = canvas.getContext('2d');
+  const controls = ['m','n1','n2','n3','breath','speed','zoom'];
+  const state = {dim:4, auto:true, showEdges:true, angles:[0.34,-0.48,0.18,0.65,-0.22,0.12,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0], drag:false, lastX:0,lastY:0, rotX:0.35,rotY:-0.35, time:0, last:0, vertices:[],edges:[],faces:[]};
+  const read = id => Number($(id).value);
+  function superRadius(theta) {
+    const m=read('m'), n1=read('n1'), n2=read('n2'), n3=read('n3');
+    const a=Math.pow(Math.abs(Math.cos(m*theta/4)),n2), b=Math.pow(Math.abs(Math.sin(m*theta/4)),n3);
+    return Math.pow(a+b,-1/n1);
+  }
+  function build() {
+    const n=1<<state.dim; state.vertices=[];state.edges=[];state.faces=[];
+    for(let mask=0;mask<n;mask++) { const p=[]; for(let d=0;d<state.dim;d++) p.push((mask>>d&1)?1:-1); state.vertices.push({mask,p}); }
+    for(let i=0;i<n;i++) for(let d=0;d<state.dim;d++){const j=i^(1<<d);if(i<j)state.edges.push([i,j]);}
+    // Every square face is uniquely determined by two varying dimensions and fixed remaining bits.
+    for(let a=0;a<state.dim;a++)for(let b=a+1;b<state.dim;b++)for(let base=0;base<n;base++)if(!(base&(1<<a))&&!(base&(1<<b)))state.faces.push([base,base|(1<<a),base|(1<<a)|(1<<b),base|(1<<b)]);
+    $('vertices').textContent=n; $('edges').textContent=state.edges.length; $('faces').textContent=state.faces.length;
+    $('dimensionPill').textContent=state.dim+'D · '+({3:'CUBE',4:'TESSERACT',5:'PENTERACT',6:'HEXERACT'}[state.dim]);
+  }
+  function rotate(points, t) {
+    return points.map(src=>{let p=src.slice();
+      // Rotate in multiple coordinate planes to expose higher-dimensional structure.
+      for(let a=0;a<state.dim;a++) for(let b=a+1;b<state.dim;b++){
+        let angle=0;
+        if(a===0&&b===1)angle=state.rotY;
+        else if(a===0&&b===2)angle=state.rotX;
+        else if(a===1&&b===2)angle=state.rotX*.42;
+        else angle=(state.angles[(a*state.dim+b)%state.angles.length]||0) + t*(0.055+0.013*(a+b))*read('speed');
+        if(a>=3||b>=3) angle += t*(0.12+0.035*(a+b))*read('speed');
+        const c=Math.cos(angle),s=Math.sin(angle),x=p[a],y=p[b];p[a]=x*c-y*s;p[b]=x*s+y*c;
+      }
+      return p;
+    });
+  }
+  function project(p, t) {
+    let v=p.slice();
+    // A superformula-derived radius sampled from a stable direction angle.
+    const theta=Math.atan2(v[1]||0.0001,v[0]||0.0001);
+    const phi=Math.atan2(v[2]||0.0001,Math.hypot(v[0]||0,v[1]||0)+0.0001);
+    const rA=superRadius(theta), rB=superRadius(phi+Math.PI/2);
+    const norm=Math.hypot(...v)||1;
+    const wave=(rA*rB*1.4-0.62)*read('breath')/100;
+    const breathe=1+wave+Math.sin(t*1.1+theta*3)*0.018;
+    v=v.map(x=>x/norm* Math.sqrt(state.dim)*breathe);
+    // Sequential perspective projection: each dimension folds into the previous one.
+    for(let d=state.dim-1;d>=3;d--){const distance=3.8;const k=distance/(distance-v[d]);for(let i=0;i<d;i++)v[i]*=k;}
+    if(state.dim>2){const distance=4.4,k=distance/(distance-v[2]);v[0]*=k;v[1]*=k;}
+    return [v[0],v[1],v[2]||0];
+  }
+  function resize(){const rect=canvas.getBoundingClientRect(),dpr=Math.min(window.devicePixelRatio||1,2);canvas.width=Math.max(1,Math.floor(rect.width*dpr));canvas.height=Math.max(1,Math.floor(rect.height*dpr));ctx.setTransform(dpr,0,0,dpr,0,0);}
+  function draw(now){
+    const dt=Math.min(0.05,(now-state.last)/1000||0);state.last=now;if(state.auto)state.time+=dt;
+    const t=state.time, w=canvas.clientWidth,h=canvas.clientHeight;ctx.clearRect(0,0,w,h);
+    const bg=ctx.createRadialGradient(w*.5,h*.48,10,w*.5,h*.48,Math.max(w,h)*.7);bg.addColorStop(0,'#111e2b');bg.addColorStop(.65,'#0a111b');bg.addColorStop(1,'#080c13');ctx.fillStyle=bg;ctx.fillRect(0,0,w,h);
+    // faint coordinate reticle
+    ctx.save();ctx.translate(w/2,h/2);ctx.strokeStyle='#233345';ctx.lineWidth=1;ctx.globalAlpha=.48;ctx.beginPath();ctx.arc(0,0,Math.min(w,h)*.29,0,Math.PI*2);ctx.stroke();ctx.beginPath();ctx.moveTo(-w*.36,0);ctx.lineTo(w*.36,0);ctx.moveTo(0,-h*.36);ctx.lineTo(0,h*.36);ctx.stroke();ctx.restore();
+    const rotated=rotate(state.vertices.map(v=>v.p),t), projected=rotated.map(p=>project(p,t));
+    const scale=Math.min(w,h)*.235*read('zoom')/100;
+    const pts=projected.map((p,i)=>({x:w/2+p[0]*scale,y:h/2+p[1]*scale,z:p[2],i}));
+    // Draw faces as delicate translucent planes in 3D/4D; only actual 2-faces are enumerated.
+    if(state.dim<=4){const faces=state.faces.map(f=>({f,z:f.reduce((s,i)=>s+pts[i].z,0)/4})).sort((a,b)=>a.z-b.z);for(const face of faces){ctx.beginPath();ctx.moveTo(pts[face.f[0]].x,pts[face.f[0]].y);for(let k=1;k<face.f.length;k++)ctx.lineTo(pts[face.f[k]].x,pts[face.f[k]].y);ctx.closePath();const alpha=Math.max(.018,Math.min(.095,.035+(face.z+1)*.025));ctx.fillStyle=`rgba(73,190,218,${alpha})`;ctx.fill();}}
+    if(state.showEdges){const edges=state.edges.map(e=>({e,z:(pts[e[0]].z+pts[e[1]].z)/2})).sort((a,b)=>a.z-b.z);for(const {e,z} of edges){const a=pts[e[0]],b=pts[e[1]],depth=Math.max(0,Math.min(1,(z+1.5)/3));ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.strokeStyle=`rgba(${Math.round(67+depth*30)},${Math.round(174+depth*62)},${Math.round(206+depth*42)},${.25+depth*.65})`;ctx.lineWidth=.65+depth*1.25;ctx.shadowColor='#51d9ed';ctx.shadowBlur=2+depth*7;ctx.stroke();}ctx.shadowBlur=0;}
+    // Draw nodes with depth cues and binary labels for the 4D default and smaller models.
+    for(const p of pts.slice().sort((a,b)=>a.z-b.z)){const depth=Math.max(0,Math.min(1,(p.z+1.5)/3));const r=(1.7+depth*2.2)*(state.dim>=5?.82:1);ctx.beginPath();ctx.arc(p.x,p.y,r,0,Math.PI*2);ctx.fillStyle=depth>.55?'#d6ffff':'#67dfea';ctx.shadowColor='#4de5f0';ctx.shadowBlur=5+depth*10;ctx.fill();ctx.shadowBlur=0;if(state.dim<=4){ctx.font='10px ui-monospace,monospace';ctx.fillStyle=`rgba(191,224,238,${.48+depth*.45})`;ctx.fillText(p.i.toString(2).padStart(state.dim,'0'),p.x+7,p.y-7);}}
+    if(state.auto){state.rotX+=dt*.16*read('speed');state.rotY+=dt*.12*read('speed');}
+    requestAnimationFrame(draw);
+  }
+  function updateLabels(){for(const id of controls){const out=$(id+'Out');if(!out)continue;const v=read(id);out.textContent=id==='breath'?v+'%':id==='speed'?v.toFixed(2)+'×':id==='zoom'?v+'%':v.toFixed(2);}}
+  controls.forEach(id=>$(id).addEventListener('input',updateLabels));
+  $('dimension').addEventListener('change',e=>{state.dim=Number(e.target.value);build();});
+  $('autoBtn').addEventListener('click',()=>{state.auto=!state.auto;$('autoBtn').textContent=state.auto?'Ⅱ Pause motion':'▶ Resume motion';$('autoBtn').classList.toggle('active',state.auto);$('modePill').textContent=state.auto?'AUTO ROTATION ON':'MOTION PAUSED';});
+  $('edgesBtn').addEventListener('click',()=>{state.showEdges=!state.showEdges;$('edgesBtn').textContent='Edges: '+(state.showEdges?'on':'off');$('edgesBtn').classList.toggle('active',state.showEdges);});
+  $('resetBtn').addEventListener('click',()=>{state.rotX=.35;state.rotY=-.35;state.time=0;$('zoom').value=100;updateLabels();});
+  $('randomBtn').addEventListener('click',()=>{ $('m').value=(2+Math.random()*10).toFixed(2);$('n1').value=(1+Math.random()*13).toFixed(2);$('n2').value=(1+Math.random()*13).toFixed(2);$('n3').value=(1+Math.random()*13).toFixed(2);$('breath').value=Math.round(8+Math.random()*42);updateLabels();});
+  canvas.addEventListener('pointerdown',e=>{state.drag=true;state.lastX=e.clientX;state.lastY=e.clientY;canvas.setPointerCapture(e.pointerId);});
+  canvas.addEventListener('pointermove',e=>{if(!state.drag)return;const dx=e.clientX-state.lastX,dy=e.clientY-state.lastY;state.lastX=e.clientX;state.lastY=e.clientY;state.rotY+=dx*.008;state.rotX+=dy*.008;});
+  canvas.addEventListener('pointerup',()=>state.drag=false);canvas.addEventListener('pointercancel',()=>state.drag=false);
+  canvas.addEventListener('wheel',e=>{e.preventDefault();$('zoom').value=Math.max(55,Math.min(145,read('zoom')+(e.deltaY<0?4:-4)));updateLabels();},{passive:false});
+  window.addEventListener('resize',resize);build();updateLabels();resize();requestAnimationFrame(draw);
+})();
+</script>
+</body>
+</html>
